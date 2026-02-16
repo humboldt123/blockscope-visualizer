@@ -1,8 +1,8 @@
 # Blockscope Visualizer
 
-Voxel engine made using Python, Pygame and OpenGL
+Visualizer made using Python, Pygame and OpenGL
 
-![](images/example.png)
+![](images/dummy.gif)
 
 ## Introduction
 
