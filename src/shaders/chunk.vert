@@ -1,29 +1,31 @@
 #version 330 core
 
-layout (location = 0) in uint packed_data;
-
-int x, y, z;
-int ao_id;
-int flip_id;
+layout (location = 0) in vec3 in_position;
+layout (location = 1) in float in_tex_id;
+layout (location = 2) in float in_packed_face_ao;
+layout (location = 3) in vec3 in_tint_color;
+layout (location = 4) in float in_alpha;
 
 uniform mat4 m_proj;
 uniform mat4 m_view;
-uniform mat4 m_model;
 
-flat out int voxel_id;
+flat out int frag_tex_id;
 flat out int face_id;
 
-//out vec3 voxel_color;
 out vec2 uv;
 out float shading;
-out vec3 frag_world_pos;
+out vec3 tint_color;
+out float frag_alpha;
 
 const float ao_values[4] = float[4](0.1, 0.25, 0.5, 1.0);
 
-const float face_shading[6] = float[6](
+const float face_shading[12] = float[12](
     1.0, 0.5,  // top bottom
     0.5, 0.8,  // right left
-    0.5, 0.8   // front back
+    0.5, 0.8,  // front back
+    1.0, 1.0,  // unshaded (face_id + 6)
+    1.0, 1.0,
+    1.0, 1.0
 );
 
 const vec2 uv_coords[4] = vec2[4](
@@ -32,50 +34,27 @@ const vec2 uv_coords[4] = vec2[4](
 );
 
 const int uv_indices[24] = int[24](
-    1, 0, 2, 1, 2, 3,  // tex coords indices for vertices of an even face
+    1, 0, 2, 1, 2, 3,  // even face
     3, 0, 2, 3, 1, 0,  // odd face
-    3, 1, 0, 3, 0, 2,  // even flipped face
-    1, 2, 3, 1, 0, 2   // odd flipped face
+    3, 1, 0, 3, 0, 2,  // even flipped
+    1, 2, 3, 1, 0, 2   // odd flipped
 );
 
-vec3 hash31(float p) {
-    vec3 p3 = fract(vec3(p * 21.2) * vec3(0.1031, 0.1030, 0.0973));
-    p3 += dot(p3, p3.yzx + 33.33);
-    return fract((p3.xxy + p3.yzz) * p3.zyx) + 0.05;
-}
-
-void unpack(uint packed_data) {
-    // a, b, c, d, e, f, g = x, y, z, voxel_id, face_id, ao_id, flip_id
-    uint b_bit = 6u, c_bit = 6u, d_bit = 8u, e_bit = 3u, f_bit = 2u, g_bit = 1u;
-    uint b_mask = 63u, c_mask = 63u, d_mask = 255u, e_mask = 7u, f_mask = 3u, g_mask = 1u;
-    //
-    uint fg_bit = f_bit + g_bit;
-    uint efg_bit = e_bit + fg_bit;
-    uint defg_bit = d_bit + efg_bit;
-    uint cdefg_bit = c_bit + defg_bit;
-    uint bcdefg_bit = b_bit + cdefg_bit;
-    // unpacking vertex data
-    x = int(packed_data >> bcdefg_bit);
-    y = int((packed_data >> cdefg_bit) & b_mask);
-    z = int((packed_data >> defg_bit) & c_mask);
-    //
-    voxel_id = int((packed_data >> efg_bit) & d_mask);
-    face_id = int((packed_data >> fg_bit) & e_mask);
-    ao_id = int((packed_data >> g_bit) & f_mask);
-    flip_id = int(packed_data & g_mask);
-}
-
 void main() {
-    unpack(packed_data);
+    int pack_val = int(in_packed_face_ao);
+    face_id = pack_val / 16;
+    int ao_id = (pack_val % 16) / 2;
+    int flip_id = pack_val % 2;
 
-    vec3 in_position = vec3(x, y, z);
-    int uv_index = gl_VertexID % 6  + ((face_id & 1) + flip_id * 2) * 6;
+    frag_tex_id = int(in_tex_id);
+    tint_color = in_tint_color;
+    frag_alpha = in_alpha;
 
+    // UV uses face parity (& 1) so face_id 6-11 works like 0-5
+    int uv_index = gl_VertexID % 6 + ((face_id & 1) + flip_id * 2) * 6;
     uv = uv_coords[uv_indices[uv_index]];
 
     shading = face_shading[face_id] * ao_values[ao_id];
 
-    frag_world_pos = (m_model * vec4(in_position, 1.0)).xyz;
-
-    gl_Position = m_proj * m_view * vec4(frag_world_pos, 1.0);
+    gl_Position = m_proj * m_view * vec4(in_position, 1.0);
 }

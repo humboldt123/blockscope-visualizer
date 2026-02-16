@@ -1,4 +1,4 @@
-# python-voxel-engine
+# Blockscope Visualizer
 
 Voxel engine made using Python, Pygame and OpenGL
 
@@ -6,7 +6,9 @@ Voxel engine made using Python, Pygame and OpenGL
 
 ## Introduction
 
-This project enables you to generate and render voxel-based 3D worlds, which can be a foundation for various games, simulations, or interactive 3D applications.
+This project is a visualizer for [BlockScope](https://github.com/humboldt123/blockscope) a Minecraft mod for collecting context-rich data to train AI models.
+
+**Note:** You will need to open a Minecraft jar, go into `assets/` and put the `models` folder along with the `textures` folder in the assets directory here. (To be more specific, all you need from the textures directory is the `blocks` and `colormap` directory)
 
 ## Prerequisites
 
@@ -34,7 +36,7 @@ uv install
 4. Run the program using UV:
 
 ```sh
-uv run python src/main.py
+uv run python src/main.py [path of blockscope recording]
 ```
 
 ## Controls
@@ -45,5 +47,5 @@ uv run python src/main.py
 - **D:** Move to the right.
 - **S:** Move backward.
 - **Space:** Go upward or ascend.
-- **Left Control:** Go downward or descend.
-- **Escape:** Exit the program.
+- **Shift:** Go downward or descend.
+- **Escape:** Gain control of the cursor

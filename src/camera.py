@@ -1,4 +1,3 @@
-from frustum import Frustum
 from settings import *
 
 
@@ -14,8 +13,6 @@ class Camera:
 
         self.m_proj = glm.perspective(V_FOV, ASPECT_RATIO, NEAR, FAR)
         self.m_view = glm.mat4()
-
-        self.frustum = Frustum(self)
 
     def update(self):
         self.update_vectors()
@@ -47,13 +44,20 @@ class Camera:
         self.position += self.right * velocity
 
     def move_up(self, velocity):
-        self.position += self.up * velocity
+        self.position += glm.vec3(0, 1, 0) * velocity
 
     def move_down(self, velocity):
-        self.position -= self.up * velocity
+        self.position -= glm.vec3(0, 1, 0) * velocity
 
     def move_forward(self, velocity):
-        self.position += self.forward * velocity
+        # Move only on XZ plane (Minecraft creative-mode style)
+        flat_forward = glm.vec3(self.forward.x, 0, self.forward.z)
+        if glm.length(flat_forward) > 0.001:
+            flat_forward = glm.normalize(flat_forward)
+        self.position += flat_forward * velocity
 
     def move_back(self, velocity):
-        self.position -= self.forward * velocity
+        flat_forward = glm.vec3(self.forward.x, 0, self.forward.z)
+        if glm.length(flat_forward) > 0.001:
+            flat_forward = glm.normalize(flat_forward)
+        self.position -= flat_forward * velocity

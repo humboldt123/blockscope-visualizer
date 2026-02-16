@@ -1,14 +1,14 @@
 [project]
-name = "python-voxel-engine"
-version = "0.1.1"
-description = "Voxel 3D Engine like Minecraft using Python, Pygame and OpenGL."
+name = "blockscope-visualizer"
+version = "0.1.0"
+description = "Blockscope replay visualizer - renders Minecraft gameplay recordings with native textures."
 readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = ">=3.12"
 dependencies = [
     "moderngl>=5.12.0",
-    "numba>=0.63.1",
-    "opensimplex>=0.4.5.1",
     "pygame>=2.6.1",
     "pyglm>=2.8.3",
+    "imgui[pygame]>=2.0.0",
+    "av>=16.0.0",
 ]

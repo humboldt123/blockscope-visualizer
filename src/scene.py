@@ -1,21 +1,19 @@
 import moderngl as mgl
 
-from settings import *
-from world import World
-from world_objects.water import Water
+from world import ReplayWorld
+from player_marker import PlayerMarker
 
 
 class Scene:
-    def __init__(self, app):
+    def __init__(self, app, replay_world: ReplayWorld):
         self.app = app
-        self.world = World(self.app)
-        self.water = Water(app)
+        self.world = replay_world
+        self.player_marker = PlayerMarker(app)
 
     def render(self):
-        # chunks rendering
-        self.world.render()
-
-        # rendering without cull face
+        # Disable face culling for world - cross plants are double-sided
+        # and leaf blocks need back faces visible through transparency
         self.app.ctx.disable(mgl.CULL_FACE)
-        self.water.render()
+        self.world.render()
+        self.player_marker.render()
         self.app.ctx.enable(mgl.CULL_FACE)
